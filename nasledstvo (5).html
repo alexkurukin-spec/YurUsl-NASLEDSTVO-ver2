@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Наследство — ЯПомогаю.РФ</title>
+    <meta name="description" content="Юридическое сопровождение наследственных дел: вступление, оспаривание завещаний, раздел имущества. Бесплатная консультация.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cream: '#FAF8F4', 'cream-warm': '#F4F0E8',
+                        olive: { DEFAULT: '#8C9178', dark: '#5C6148', light: '#B5BAA3', pale: '#D4D8C8' },
+                        forest: { DEFAULT: '#2D4A1E', light: '#3D6228', dark: '#1E3312' },
+                        ember: { DEFAULT: '#E8772E', dark: '#C4611F', light: '#F09050' },
+                        ink: '#2A2F25', 'ink-mid': '#5A6050', 'ink-light': '#7A8070', 'ink-pale': '#A8AD9E',
+                    },
+                    fontFamily: { body: ['"Manrope"', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Manrope',sans-serif;background:#FAF8F4;color:#2A2F25;overflow-x:hidden}
+        ::selection{background:rgba(232,119,46,.18)}
+        ::-webkit-scrollbar{width:6px}
+        ::-webkit-scrollbar-track{background:#FAF8F4}
+        ::-webkit-scrollbar-thumb{background:rgba(140,145,120,.3);border-radius:3px}
+        #heroCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+        .btn-ember{background:#E8772E;color:#fff;transition:all .3s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
+        .btn-ember::after{content:'';position:absolute;inset:0;background:#C4611F;transform:scaleX(0);transform-origin:left;transition:transform .35s cubic-bezier(.16,1,.3,1)}
+        .btn-ember:hover::after{transform:scaleX(1)}
+        .btn-ember span{position:relative;z-index:1}
+        .btn-ember:hover{box-shadow:0 8px 30px rgba(232,119,46,.25)}
+        .btn-outline{border:1.5px solid rgba(140,145,120,.35);color:#5A6050;transition:all .3s ease}
+        .btn-outline:hover{border-color:rgba(140,145,120,.6);color:#2A2F25;background:rgba(140,145,120,.06)}
+
+        .nav-scrolled{background:rgba(250,248,244,.92)!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;box-shadow:0 1px 20px rgba(0,0,0,.04)!important}
+
+        .hero-anim{opacity:0;transform:translateY(20px);animation:heroIn .9s cubic-bezier(.16,1,.3,1) forwards}
+        .hero-anim-1{animation-delay:.15s}
+        .hero-anim-2{animation-delay:.3s}
+        .hero-anim-3{animation-delay:.5s}
+        .hero-anim-4{animation-delay:.7s}
+        @keyframes heroIn{to{opacity:1;transform:translateY(0)}}
+
+        .rv .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+        .rv .reveal.visible{opacity:1;transform:translateY(0)}
+        .reveal-d1{transition-delay:.1s}.reveal-d2{transition-delay:.2s}.reveal-d3{transition-delay:.3s}.reveal-d4{transition-delay:.4s}
+
+        .svc-row{border-bottom:1px solid rgba(140,145,120,.16);transition:background .3s ease}
+        .svc-row:first-child{border-top:1px solid rgba(140,145,120,.16)}
+        .svc-row:hover{background:rgba(140,145,120,.05)}
+        .svc-row:hover .svc-num{color:#E8772E}
+        .svc-row:hover .svc-arrow{transform:translateX(4px);opacity:1}
+        .svc-num{transition:color .3s ease}
+        .svc-arrow{opacity:.35;transition:transform .3s cubic-bezier(.16,1,.3,1),opacity .3s ease}
+
+        .form-input{background:#fff;border:1.5px solid rgba(140,145,120,.2);color:#2A2F25;transition:border-color .3s,box-shadow .3s}
+        .form-input:focus{outline:none;border-color:rgba(232,119,46,.5);box-shadow:0 0 0 3px rgba(232,119,46,.08)}
+        .form-input::placeholder{color:#A8AD9E}
+
+        .toast{position:fixed;bottom:24px;right:24px;padding:14px 22px;background:#2D4A1E;color:#fff;border-radius:8px;font-size:13px;z-index:9999;transform:translateY(80px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1)}
+        .toast.show{transform:translateY(0);opacity:1}
+
+        .mobile-menu{position:fixed;inset:0;background:rgba(250,248,244,.98);backdrop-filter:blur(24px);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transform:translateX(100%);transition:transform .45s cubic-bezier(.16,1,.3,1)}
+        .mobile-menu.open{transform:translateX(0)}
+
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}.reveal{opacity:1;transform:none}.hero-anim{opacity:1;transform:none}}
+    </style>
+</head>
+<body>
+
+<!-- ====== НАВИГАЦИЯ ====== -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-400" style="background:transparent">
+    <div class="max-w-6xl mx-auto px-5 lg:px-8 h-16 lg:h-[72px] flex items-center justify-between">
+        <a href="#" class="flex items-center gap-2.5">
+            <div class="w-8 h-8 bg-forest rounded-lg flex items-center justify-center"><span class="text-white font-bold text-xs">ЯП</span></div>
+            <span class="font-bold text-ink text-[15px] tracking-tight">ЯПомогаю<span class="text-ember">.РФ</span></span>
+        </a>
+        <div class="hidden lg:flex items-center gap-8">
+            <a href="#services" class="text-[13px] text-ink-mid hover:text-ink transition-colors font-medium">Услуги</a>
+            <a href="#process" class="text-[13px] text-ink-mid hover:text-ink transition-colors font-medium">Процесс</a>
+            <a href="#results" class="text-[13px] text-ink-mid hover:text-ink transition-colors font-medium">Результаты</a>
+            <a href="#faq" class="text-[13px] text-ink-mid hover:text-ink transition-colors font-medium">Вопросы</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="#cta" class="hidden sm:inline-flex btn-ember px-5 py-2 rounded-lg text-[12px] font-semibold tracking-wide"><span>Консультация</span></a>
+            <button id="burger" class="lg:hidden w-9 h-9 flex flex-col items-center justify-center gap-1.5" aria-label="Меню">
+                <span class="block w-5 h-[1.5px] bg-ink"></span>
+                <span class="block w-5 h-[1.5px] bg-ink"></span>
+                <span class="block w-3.5 h-[1.5px] bg-ink self-end"></span>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Мобильное меню -->
+<div id="mobileMenu" class="mobile-menu lg:hidden">
+    <button id="closeMenu" class="absolute top-5 right-5 w-9 h-9 flex items-center justify-center" aria-label="Закрыть"><i data-lucide="x" class="w-5 h-5 text-ink"></i></button>
+    <a href="#services" class="mob-link text-ink text-xl font-semibold hover:text-ember transition-colors">Услуги</a>
+    <a href="#process" class="mob-link text-ink text-xl font-semibold hover:text-ember transition-colors">Процесс</a>
+    <a href="#results" class="mob-link text-ink text-xl font-semibold hover:text-ember transition-colors">Результаты</a>
+    <a href="#faq" class="mob-link text-ink text-xl font-semibold hover:text-ember transition-colors">Вопросы</a>
+    <div class="w-12 h-px bg-olive/20 my-2"></div>
+    <a href="#cta" class="mob-link btn-ember px-7 py-2.5 rounded-lg text-sm font-semibold"><span>Консультация</span></a>
+</div>
+
+<!-- ====== HERO: КОЛЬЦА ПОКОЛЕНИЙ ====== -->
+<section id="hero" class="relative min-h-screen flex items-center overflow-hidden bg-cream">
+    <canvas id="heroCanvas"></canvas>
+    <div class="absolute bottom-0 left-0 right-0 h-28 pointer-events-none" style="background:linear-gradient(to top,#FAF8F4,transparent)"></div>
+
+    <!-- Вертикальная сноска-индекс (editorial-деталь) -->
+    <div class="hero-anim hero-anim-4 hidden xl:block absolute right-8 top-1/2 -translate-y-1/2 z-10" style="writing-mode:vertical-rl">
+        <span class="text-[10px] uppercase tracking-[.3em] text-ink-pale font-medium">Раздел V ГК РФ · ст. 1110—1185</span>
+    </div>
+
+    <div class="relative z-10 w-full max-w-6xl mx-auto px-5 lg:px-8 pt-24 pb-16">
+        <div class="max-w-2xl">
+            <p class="hero-anim hero-anim-1 text-[11px] uppercase tracking-[.25em] text-ember font-semibold mb-7 flex items-center gap-3">
+                <span class="inline-block w-8 h-px bg-ember/60"></span>Наследственное право
+            </p>
+            <h1 class="hero-anim hero-anim-2 text-6xl sm:text-7xl md:text-8xl lg:text-[112px] font-extrabold leading-[.9] tracking-tight text-ink mb-7">
+                Наслед<wbr>ство
+            </h1>
+            <p class="hero-anim hero-anim-3 text-base sm:text-lg md:text-xl text-ink-light font-light max-w-md mb-11 leading-relaxed">
+                Это право, а не надежда.<br>Защитим то, что вам положено.
+            </p>
+            <div class="hero-anim hero-anim-4 flex flex-col sm:flex-row items-start sm:items-center gap-3.5">
+                <a href="#cta" class="btn-ember px-8 py-3.5 rounded-lg text-[13px] font-semibold tracking-wide w-full sm:w-auto text-center"><span>Бесплатная консультация</span></a>
+                <a href="#process" class="btn-outline px-8 py-3.5 rounded-lg text-[13px] font-medium tracking-wide w-full sm:w-auto text-center">Как мы работаем</a>
+            </div>
+            <p class="hero-anim hero-anim-4 text-[11px] text-ink-pale mt-6 font-light">Ответим в течение 30 минут · Без обязательств</p>
+        </div>
+    </div>
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce opacity-40"><i data-lucide="chevron-down" class="w-5 h-5 text-ink-pale"></i></div>
+</section>
+
+<!-- ====== РЕЗУЛЬТАТЫ: асимметричный нарратив ====== -->
+<section id="results" class="bg-forest py-18 md:py-24 px-5" style="padding-top:4.5rem;padding-bottom:4.5rem">
+    <div class="max-w-5xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        <div class="reveal lg:col-span-5">
+            <div class="flex items-baseline gap-1">
+                <span class="text-cream text-7xl sm:text-8xl font-extrabold leading-none tracking-tight" data-target="97">0</span>
+                <span class="text-ember-light text-4xl sm:text-5xl font-extrabold">%</span>
+            </div>
+            <p class="text-olive-light/80 text-[14px] font-light leading-relaxed mt-4 max-w-xs">дел завершаются в пользу наших клиентов — в суде, у нотариуса или в переговорах.</p>
+        </div>
+        <div class="lg:col-span-7 lg:border-l lg:border-white/10 lg:pl-14">
+            <div class="reveal reveal-d1 flex items-baseline justify-between gap-6 py-4 border-b border-white/10">
+                <span class="text-cream text-2xl sm:text-3xl font-bold whitespace-nowrap"><span data-target="15">0</span>&nbsp;лет</span>
+                <span class="text-olive-light/60 text-[12px] font-light text-right">практики в наследственных спорах с 2009 года</span>
+            </div>
+            <div class="reveal reveal-d2 flex items-baseline justify-between gap-6 py-4 border-b border-white/10">
+                <span class="text-cream text-2xl sm:text-3xl font-bold whitespace-nowrap"><span data-target="2000">0</span>+&nbsp;дел</span>
+                <span class="text-olive-light/60 text-[12px] font-light text-right">завершено: от простых вступлений до многолетних споров</span>
+            </div>
+            <div class="reveal reveal-d3 flex items-baseline justify-between gap-6 py-4">
+                <span class="text-cream text-2xl sm:text-3xl font-bold whitespace-nowrap">48&nbsp;часов</span>
+                <span class="text-olive-light/60 text-[12px] font-light text-right">от обращения до начала работы по вашему делу</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====== УСЛУГИ: editorial-индекс ====== -->
+<section id="services" class="py-20 md:py-28 px-5 bg-cream">
+    <div class="max-w-5xl mx-auto grid lg:grid-cols-12 gap-10 lg:gap-14">
+        <div class="lg:col-span-4">
+            <div class="reveal lg:sticky lg:top-28">
+                <p class="text-[11px] uppercase tracking-[.2em] text-ember font-semibold mb-3">Услуги</p>
+                <h2 class="text-3xl sm:text-4xl font-bold text-ink tracking-tight leading-tight mb-5">Поможем с любым вопросом</h2>
+                <p class="text-ink-light text-[13px] font-light leading-relaxed max-w-xs">От первого визита к нотариусу до кассации. Берём дело целиком, а не отдельные документы.</p>
+            </div>
+        </div>
+        <div class="lg:col-span-8">
+            <a href="#cta" class="svc-row reveal reveal-d1 group flex items-center gap-5 sm:gap-7 py-6">
+                <span class="svc-num text-[13px] font-bold text-ink-pale w-7 flex-shrink-0">01</span>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-ink text-[16px] sm:text-[17px] mb-1">Вступление в наследство</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed">Полное сопровождение от заявления у нотариуса до получения свидетельства</p>
+                </div>
+                <i data-lucide="arrow-up-right" class="svc-arrow w-4 h-4 text-ember flex-shrink-0"></i>
+            </a>
+            <a href="#cta" class="svc-row reveal reveal-d1 group flex items-center gap-5 sm:gap-7 py-6">
+                <span class="svc-num text-[13px] font-bold text-ink-pale w-7 flex-shrink-0">02</span>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-ink text-[16px] sm:text-[17px] mb-1">Оспаривание завещания</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed">Судебная защита при подделке, принуждении или недееспособности завещателя</p>
+                </div>
+                <i data-lucide="arrow-up-right" class="svc-arrow w-4 h-4 text-ember flex-shrink-0"></i>
+            </a>
+            <a href="#cta" class="svc-row reveal reveal-d2 group flex items-center gap-5 sm:gap-7 py-6">
+                <span class="svc-num text-[13px] font-bold text-ink-pale w-7 flex-shrink-0">03</span>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-ink text-[16px] sm:text-[17px] mb-1">Раздел имущества</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed">Честное распределение наследственной массы между наследниками</p>
+                </div>
+                <i data-lucide="arrow-up-right" class="svc-arrow w-4 h-4 text-ember flex-shrink-0"></i>
+            </a>
+            <a href="#cta" class="svc-row reveal reveal-d2 group flex items-center gap-5 sm:gap-7 py-6">
+                <span class="svc-num text-[13px] font-bold text-ink-pale w-7 flex-shrink-0">04</span>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-ink text-[16px] sm:text-[17px] mb-1">Международное наследство</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed">Активы за рубежом, кросс-граничные споры, признание решений</p>
+                </div>
+                <i data-lucide="arrow-up-right" class="svc-arrow w-4 h-4 text-ember flex-shrink-0"></i>
+            </a>
+            <a href="#cta" class="svc-row reveal reveal-d3 group flex items-center gap-5 sm:gap-7 py-6">
+                <span class="svc-num text-[13px] font-bold text-ink-pale w-7 flex-shrink-0">05</span>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-ink text-[16px] sm:text-[17px] mb-1">Налоговое планирование</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed">Минимизация налоговых потерь при передаче наследственных активов</p>
+                </div>
+                <i data-lucide="arrow-up-right" class="svc-arrow w-4 h-4 text-ember flex-shrink-0"></i>
+            </a>
+            <a href="#cta" class="svc-row reveal reveal-d3 group flex items-center gap-5 sm:gap-7 py-6">
+                <span class="svc-num text-[13px] font-bold text-ink-pale w-7 flex-shrink-0">06</span>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-ink text-[16px] sm:text-[17px] mb-1">Защита от оспаривания</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed">Превентивная защита завещания от будущих судебных претензий</p>
+                </div>
+                <i data-lucide="arrow-up-right" class="svc-arrow w-4 h-4 text-ember flex-shrink-0"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ====== ЦИТАТА-ПОЗИЦИОНИРОВАНИЕ ====== -->
+<section class="py-16 md:py-24 px-5 bg-cream-warm">
+    <div class="max-w-3xl mx-auto">
+        <p class="reveal text-2xl sm:text-3xl md:text-4xl font-bold text-ink tracking-tight leading-snug">
+            <span class="text-ember">«</span>Наследственные споры выигрывают не эмоции, а сроки и документы. Мы следим и за тем, и за другим.<span class="text-ember">»</span>
+        </p>
+        <p class="reveal reveal-d1 text-[12px] uppercase tracking-[.2em] text-ink-pale font-medium mt-6">Принцип работы ЯПомогаю.РФ</p>
+    </div>
+</section>
+
+<!-- ====== ПРОЦЕСС ====== -->
+<section id="process" class="py-20 md:py-28 px-5 bg-cream">
+    <div class="max-w-4xl mx-auto">
+        <div class="reveal mb-14">
+            <p class="text-[11px] uppercase tracking-[.2em] text-ember font-semibold mb-3">Процесс</p>
+            <h2 class="text-3xl sm:text-4xl font-bold text-ink tracking-tight">Как мы работаем</h2>
+        </div>
+        <div>
+            <div class="reveal reveal-d1 flex gap-5 md:gap-8 py-7 border-b border-olive/12">
+                <span class="text-3xl font-extrabold text-ember/25 flex-shrink-0 w-12 text-right">01</span>
+                <div>
+                    <h3 class="font-semibold text-ink text-base mb-1.5">Бесплатная консультация</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed max-w-lg">Оцениваем ситуацию, называем шансы и риски. Вы принимаете решение: продолжать или нет.</p>
+                </div>
+            </div>
+            <div class="reveal reveal-d2 flex gap-5 md:gap-8 py-7 border-b border-olive/12">
+                <span class="text-3xl font-extrabold text-ember/25 flex-shrink-0 w-12 text-right">02</span>
+                <div>
+                    <h3 class="font-semibold text-ink text-base mb-1.5">Глубокий анализ</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed max-w-lg">Изучаем документы, выстраиваем правовую позицию, составляем подробный план действий.</p>
+                </div>
+            </div>
+            <div class="reveal reveal-d3 flex gap-5 md:gap-8 py-7 border-b border-olive/12">
+                <span class="text-3xl font-extrabold text-ember/25 flex-shrink-0 w-12 text-right">03</span>
+                <div>
+                    <h3 class="font-semibold text-ink text-base mb-1.5">Сбор доказательств</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed max-w-lg">Запрашиваем справки, архивы, банковские выписки. Формируем полную доказательную базу.</p>
+                </div>
+            </div>
+            <div class="reveal reveal-d4 flex gap-5 md:gap-8 py-7">
+                <span class="text-3xl font-extrabold text-ember/25 flex-shrink-0 w-12 text-right">04</span>
+                <div>
+                    <h3 class="font-semibold text-ink text-base mb-1.5">Защита ваших прав</h3>
+                    <p class="text-ink-light text-[13px] font-light leading-relaxed max-w-lg">Представляем интересы в суде, у нотариуса, в переговорах с другими наследниками. До результата.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ====== FAQ ====== -->
+<section id="faq" class="py-20 md:py-28 px-5 bg-cream-warm">
+    <div class="max-w-2xl mx-auto">
+        <div class="reveal mb-14">
+            <p class="text-[11px] uppercase tracking-[.2em] text-ember font-semibold mb-3">Вопросы</p>
+            <h2 class="text-3xl sm:text-4xl font-bold text-ink tracking-tight">Частые вопросы</h2>
+        </div>
+        <div class="reveal">
+            <div class="faq-item py-5 border-b border-olive/15 cursor-pointer hover:border-olive/30 transition-colors" onclick="toggleFaq(this)"><div class="flex items-start justify-between gap-4"><h3 class="font-medium text-ink text-[14px] pr-4">Что делать, если другие наследники против?</h3><i data-lucide="chevron-down" class="w-4 h-4 text-ink-pale flex-shrink-0 faq-chevron mt-0.5 transition-transform duration-300"></i></div><div class="faq-answer max-h-0 overflow-hidden transition-all duration-500"><p class="text-ink-light text-[13px] font-light leading-relaxed pt-3">Мы проводим переговоры с оппонентами, а при необходимости защищаем ваши интересы в суде. В 97% случаев удаётся достичь результата без затяжных конфликтов.</p></div></div>
+            <div class="faq-item py-5 border-b border-olive/15 cursor-pointer hover:border-olive/30 transition-colors" onclick="toggleFaq(this)"><div class="flex items-start justify-between gap-4"><h3 class="font-medium text-ink text-[14px] pr-4">Сколько стоит ведение дела?</h3><i data-lucide="chevron-down" class="w-4 h-4 text-ink-pale flex-shrink-0 faq-chevron mt-0.5 transition-transform duration-300"></i></div><div class="faq-answer max-h-0 overflow-hidden transition-all duration-500"><p class="text-ink-light text-[13px] font-light leading-relaxed pt-3">Стоимость зависит от сложности. Мы работаем с фиксированным гонораром: вы знаете точную сумму до начала. Первичная консультация бесплатна.</p></div></div>
+            <div class="faq-item py-5 border-b border-olive/15 cursor-pointer hover:border-olive/30 transition-colors" onclick="toggleFaq(this)"><div class="flex items-start justify-between gap-4"><h3 class="font-medium text-ink text-[14px] pr-4">Работаете ли вы в других регионах?</h3><i data-lucide="chevron-down" class="w-4 h-4 text-ink-pale flex-shrink-0 faq-chevron mt-0.5 transition-transform duration-300"></i></div><div class="faq-answer max-h-0 overflow-hidden transition-all duration-500"><p class="text-ink-light text-[13px] font-light leading-relaxed pt-3">Да, работаем по всей России. Нотариальные действия ведём через доверенности, судебные дела — в любом суде страны. Также ведём международные дела.</p></div></div>
+            <div class="faq-item py-5 cursor-pointer hover:border-olive/30 transition-colors" onclick="toggleFaq(this)"><div class="flex items-start justify-between gap-4"><h3 class="font-medium text-ink text-[14px] pr-4">Можно ли восстановить пропущенный срок?</h3><i data-lucide="chevron-down" class="w-4 h-4 text-ink-pale flex-shrink-0 faq-chevron mt-0.5 transition-transform duration-300"></i></div><div class="faq-answer max-h-0 overflow-hidden transition-all duration-500"><p class="text-ink-light text-[13px] font-light leading-relaxed pt-3">Да, через суд. Необходимо доказать уважительность причин: болезнь, незнание о смерти, проживание за границей. Шансы оцениваем индивидуально.</p></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ====== CTA ====== -->
+<section id="cta" class="py-20 md:py-28 px-5 bg-cream">
+    <div class="max-w-xl mx-auto text-center">
+        <div class="reveal">
+            <p class="text-[11px] uppercase tracking-[.2em] text-ember font-semibold mb-3">Начните сейчас</p>
+            <h2 class="text-3xl sm:text-4xl font-bold text-ink tracking-tight mb-3">Готовы защитить своё наследство?</h2>
+            <p class="text-ink-light text-[14px] font-light mb-8">Оставьте телефон — перезвоним бесплатно в течение 30 минут</p>
+        </div>
+        <form id="ctaForm" class="reveal reveal-d1 space-y-3" onsubmit="handleSubmit(event)">
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" name="name" placeholder="Ваше имя" required class="form-input flex-1 px-4 py-3 rounded-lg text-sm font-light">
+                <input type="tel" name="phone" placeholder="+7 (___) ___-__-__" required class="form-input flex-1 px-4 py-3 rounded-lg text-sm font-light">
+            </div>
+            <button type="submit" class="btn-ember w-full py-3.5 rounded-lg text-[13px] font-semibold tracking-wide"><span>Перезвоните мне</span></button>
+            <div id="formSuccess" class="hidden mt-3 p-3 rounded-lg bg-forest/5 border border-forest/15 text-forest text-[13px] font-medium">Спасибо! Мы перезвоним вам в ближайшее время.</div>
+        </form>
+        <p class="reveal reveal-d1 flex items-center justify-center gap-2 mt-5 text-[11px] text-ink-pale font-light">
+            <i data-lucide="lock" class="w-3 h-3"></i>Конфиденциально: данные не передаются третьим лицам, по запросу подписываем NDA
+        </p>
+        <div class="reveal reveal-d2 flex items-center justify-center gap-6 mt-7">
+            <a href="tel:88001234567" class="flex items-center gap-2 text-ink-mid hover:text-ink transition-colors"><i data-lucide="phone" class="w-4 h-4"></i><span class="text-[13px] font-medium">8 800 123-45-67</span></a>
+            <a href="#" class="flex items-center gap-2 text-ink-mid hover:text-ink transition-colors"><i data-lucide="send" class="w-4 h-4"></i><span class="text-[13px] font-medium">Telegram</span></a>
+        </div>
+    </div>
+</section>
+
+<!-- ====== FOOTER ====== -->
+<footer class="bg-forest-dark py-14 px-5">
+    <div class="max-w-5xl mx-auto">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-12">
+            <div>
+                <a href="#" class="flex items-center gap-2.5 mb-4"><div class="w-7 h-7 bg-ember rounded-md flex items-center justify-center"><span class="text-white font-bold text-[10px]">ЯП</span></div><span class="font-bold text-cream text-sm tracking-tight">ЯПомогаю<span class="text-ember-light">.РФ</span></span></a>
+                <p class="text-olive-light/50 text-[12px] font-light leading-relaxed max-w-xs">Юридическая компания, специализирующаяся на наследственном праве. Помогаем с 2009 года.</p>
+            </div>
+            <div>
+                <h4 class="text-[10px] uppercase tracking-[.2em] text-olive-light/60 font-semibold mb-4">Навигация</h4>
+                <ul class="space-y-2.5">
+                    <li><a href="#services" class="text-olive-light/50 text-[13px] font-light hover:text-cream transition-colors">Услуги</a></li>
+                    <li><a href="#process" class="text-olive-light/50 text-[13px] font-light hover:text-cream transition-colors">Процесс</a></li>
+                    <li><a href="#results" class="text-olive-light/50 text-[13px] font-light hover:text-cream transition-colors">Результаты</a></li>
+                    <li><a href="#faq" class="text-olive-light/50 text-[13px] font-light hover:text-cream transition-colors">Вопросы</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-[10px] uppercase tracking-[.2em] text-olive-light/60 font-semibold mb-4">Контакты</h4>
+                <ul class="space-y-2.5">
+                    <li class="flex items-center gap-2"><i data-lucide="phone" class="w-3.5 h-3.5 text-olive-light/40"></i><span class="text-olive-light/50 text-[13px] font-light">8 800 123-45-67</span></li>
+                    <li class="flex items-center gap-2"><i data-lucide="mail" class="w-3.5 h-3.5 text-olive-light/40"></i><span class="text-olive-light/50 text-[13px] font-light">info@yapomogayu.ru</span></li>
+                    <li class="flex items-start gap-2"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-olive-light/40 mt-0.5"></i><span class="text-olive-light/50 text-[13px] font-light">Москва, ул. Пречистенка, 12</span></li>
+                    <li class="flex items-center gap-2"><i data-lucide="clock" class="w-3.5 h-3.5 text-olive-light/40"></i><span class="text-olive-light/50 text-[13px] font-light">Пн—Пт: 09:00—20:00</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-white/8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p class="text-olive-light/30 text-[11px] font-light">&copy; 2025 ЯПомогаю.РФ · ИНН 7701234567 · ОГРН 1027700123456</p>
+            <a href="#" class="text-olive-light/30 text-[11px] font-light hover:text-olive-light/60 transition-colors">Политика конфиденциальности</a>
+        </div>
+    </div>
+</footer>
+
+<div id="toast" class="toast"></div>
+
+<script>
+try{if(window.lucide)lucide.createIcons()}catch(e){}
+window.addEventListener('load',function(){try{if(window.lucide)lucide.createIcons()}catch(e){}});
+</script>
+<script>
+
+// =============================================================
+//  КОЛЬЦА ПОКОЛЕНИЙ — HERO CANVAS
+//  Годовые кольца дерева: каждое кольцо — поколение.
+//  Линия наследования проходит сквозь них с узлами-вехами.
+// =============================================================
+(function(){
+    const canvas = document.getElementById('heroCanvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    const noMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let w, h, grainImg = null;
+    let phase = 0;
+    let born = performance.now();
+    let mx = 0, my = 0, tmx = 0, tmy = 0;
+
+    const R=140, G=145, B=120;
+    const rgba = function(a){ return 'rgba('+R+','+G+','+B+','+a+')'; };
+
+    // --- Кольца: базовый радиус + гармоники неровности ---
+    const COUNT = 24;
+    let rings = [];
+    function buildRings(){
+        rings = [];
+        let r = 26;
+        for(let i=0;i<COUNT;i++){
+            // Шаг между кольцами неравномерный, как у настоящего дерева
+            const step = 20 + Math.sin(i*1.7)*6 + (i%5===0?9:0);
+            r += step;
+            rings.push({
+                r: r,
+                a1: 2 + Math.random()*4, f1: 2 + Math.floor(Math.random()*3), p1: Math.random()*Math.PI*2,
+                a2: 1 + Math.random()*3, f2: 5 + Math.floor(Math.random()*4), p2: Math.random()*Math.PI*2,
+                w: (i%6===0) ? 1.1 : .7,
+                op: (i%6===0) ? .11 : .05 + Math.random()*.03,
+                drift: (Math.random()-.5)*.14
+            });
+        }
+    }
+
+    function resize(){
+        w = canvas.offsetWidth; h = canvas.offsetHeight;
+        canvas.width = w*dpr; canvas.height = h*dpr;
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        buildGrain();
+    }
+
+    function buildGrain(){
+        const c = document.createElement('canvas');
+        c.width = Math.ceil(w); c.height = Math.ceil(h);
+        const g = c.getContext('2d');
+        const d = g.createImageData(c.width, c.height);
+        for(let i=0;i<d.data.length;i+=4){
+            const v=Math.random()*255;
+            d.data[i]=v; d.data[i+1]=v; d.data[i+2]=v;
+            d.data[i+3]=Math.random()*7;
+        }
+        g.putImageData(d,0,0);
+        grainImg=c;
+    }
+
+    function smoothstep(e0,e1,x){
+        const t=Math.max(0,Math.min(1,(x-e0)/(e1-e0)));
+        return t*t*(3-2*t);
+    }
+
+    // Центр колец: справа, чуть выше середины; на мобильных — выше и правее
+    function ringCenter(){
+        const mob = w < 640;
+        const cx = (mob ? w*1.02 : w*.82) + mx*12;
+        const cy = (mob ? h*.24 : h*.44) + my*8;
+        return {x:cx, y:cy};
+    }
+
+    // Прогресс «прорастания» колец при загрузке (0..1)
+    function growth(now){
+        if(noMotion) return 1;
+        return smoothstep(0,1,Math.min(1,(now-born)/2600));
+    }
+
+    function drawRings(now){
+        const c = ringCenter();
+        const gr = growth(now);
+        const SEG = 140;
+        for(let i=0;i<COUNT;i++){
+            const ring = rings[i];
+            // Кольцо i прорастает со сдвигом: внутренние первыми
+            const local = Math.max(0, Math.min(1, (gr*COUNT*1.35 - i)/2.2));
+            if(local<=0) continue;
+            const sweep = local*Math.PI*2;
+            const rot = phase*ring.drift + i*.7;
+            const op = ring.op*local;
+            if(op<.004) continue;
+            ctx.strokeStyle = rgba(op);
+            ctx.lineWidth = ring.w;
+            ctx.beginPath();
+            for(let s=0;s<=SEG;s++){
+                const t = s/SEG;
+                const a = rot + t*sweep;
+                const rr = ring.r
+                    + Math.sin(a*ring.f1+ring.p1)*ring.a1
+                    + Math.sin(a*ring.f2+ring.p2)*ring.a2;
+                const x = c.x + Math.cos(a)*rr;
+                const y = c.y + Math.sin(a)*rr;
+                s===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+            }
+            ctx.stroke();
+        }
+        // Сердцевина
+        const coreOp = .14*gr;
+        ctx.fillStyle = rgba(coreOp);
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 2.2, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = rgba(coreOp*.6);
+        ctx.lineWidth = .7;
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 8 + Math.sin(phase*.8)*1, 0, Math.PI*2);
+        ctx.stroke();
+    }
+
+    // --- Линия наследования: радиус с узлами на каждом 4-м кольце ---
+    function drawLineage(now){
+        const c = ringCenter();
+        const gr = growth(now);
+        if(gr<.15) return;
+        const ang = Math.PI*.78; // вниз-влево, к контенту
+        const lineOp = .12*smoothstep(.15,.5,gr);
+        const maxR = rings[COUNT-1].r;
+        const lineLen = maxR*smoothstep(.15,.9,gr);
+        const ex = c.x + Math.cos(ang)*lineLen;
+        const ey = c.y + Math.sin(ang)*lineLen;
+        ctx.strokeStyle = rgba(lineOp);
+        ctx.lineWidth = .8;
+        ctx.beginPath();
+        ctx.moveTo(c.x + Math.cos(ang)*12, c.y + Math.sin(ang)*12);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+        // Узлы-вехи на пересечениях с кольцами
+        for(let i=3;i<COUNT;i+=4){
+            const rr = rings[i].r;
+            if(rr>lineLen) break;
+            const nx = c.x + Math.cos(ang)*rr;
+            const ny = c.y + Math.sin(ang)*rr;
+            const pulse = noMotion ? 0 : Math.sin(phase*1.4 + i)*.4;
+            ctx.fillStyle = 'rgba(232,119,46,'+(.28*gr)+')';
+            ctx.beginPath();
+            ctx.arc(nx, ny, 2 + pulse, 0, Math.PI*2);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(232,119,46,'+(.12*gr)+')';
+            ctx.lineWidth = .7;
+            ctx.beginPath();
+            ctx.arc(nx, ny, 5.5 + pulse, 0, Math.PI*2);
+            ctx.stroke();
+        }
+    }
+
+    // --- Точечная сетка слева, растворяется к кольцам ---
+    function drawGrid(){
+        const sp = 52;
+        const c = ringCenter();
+        const maxR = rings[COUNT-1].r;
+        for(let x=sp;x<w;x+=sp){
+            for(let y=sp;y<h;y+=sp){
+                const dx=x-c.x, dy=y-c.y;
+                const d=Math.sqrt(dx*dx+dy*dy);
+                const fade = smoothstep(maxR*.45, maxR*1.05, d);
+                if(fade<.05) continue;
+                ctx.fillStyle = rgba(.05*fade);
+                ctx.beginPath();
+                ctx.arc(x,y,.8,0,Math.PI*2);
+                ctx.fill();
+            }
+        }
+    }
+
+    // --- Мягкое свечение в зоне колец ---
+    function drawGlow(){
+        const c = ringCenter();
+        const r = rings[Math.floor(COUNT*.6)].r;
+        const grd = ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,r);
+        grd.addColorStop(0, rgba(.028));
+        grd.addColorStop(1, rgba(0));
+        ctx.fillStyle = grd;
+        ctx.fillRect(c.x-r, c.y-r, r*2, r*2);
+    }
+
+    function render(now){
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = '#FAF8F4';
+        ctx.fillRect(0,0,w,h);
+        drawGrid();
+        drawGlow();
+        drawRings(now);
+        drawLineage(now);
+        if(grainImg){
+            ctx.globalAlpha = .55;
+            ctx.drawImage(grainImg,0,0,w,h);
+            ctx.globalAlpha = 1;
+        }
+    }
+
+    let last = 0;
+    function loop(time){
+        if(!noMotion){
+            const dt = time-last; last = time;
+            phase += dt*.00028;
+            mx += (tmx-mx)*.04;
+            my += (tmy-my)*.04;
+        }
+        render(time);
+        requestAnimationFrame(loop);
+    }
+
+    if(!noMotion && matchMedia('(hover:hover)').matches){
+        window.addEventListener('mousemove', function(e){
+            tmx = (e.clientX/w - .5);
+            tmy = (e.clientY/h - .5);
+        }, {passive:true});
+    }
+
+    window.addEventListener('resize', resize);
+    buildRings();
+    resize();
+    requestAnimationFrame(loop);
+})();
+</script>
+<script>
+// =============================================================
+//  UI LOGIC
+// =============================================================
+(function(){
+    const nav=document.getElementById('navbar');
+    let t=false;
+    window.addEventListener('scroll',function(){
+        if(!t){requestAnimationFrame(function(){nav.classList.toggle('nav-scrolled',window.scrollY>40);t=false});t=true}
+    });
+})();
+
+(function(){
+    const m=document.getElementById('mobileMenu');
+    document.getElementById('burger').addEventListener('click',function(){m.classList.add('open');document.body.style.overflow='hidden'});
+    document.getElementById('closeMenu').addEventListener('click',function(){m.classList.remove('open');document.body.style.overflow=''});
+    m.querySelectorAll('.mob-link').forEach(function(l){l.addEventListener('click',function(){m.classList.remove('open');document.body.style.overflow=''})});
+})();
+
+(function(){
+    if(!('IntersectionObserver' in window))return;
+    const o=new IntersectionObserver(function(e){e.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.12,rootMargin:'0px 0px -30px 0px'});
+    document.documentElement.classList.add('rv');
+    document.querySelectorAll('.reveal').forEach(function(el){o.observe(el)});
+})();
+
+(function(){
+    let done=false;
+    const o=new IntersectionObserver(function(e){e.forEach(function(e){if(e.isIntersecting&&!done){done=true;document.querySelectorAll('[data-target]').forEach(function(el){const tgt=parseInt(el.dataset.target),suf=el.dataset.suffix||'',pre=el.dataset.prefix||'',st=performance.now();(function step(n){const p=Math.min((n-st)/2000,1),ease=1-Math.pow(1-p,3),v=Math.round(ease*tgt);el.textContent=pre+v.toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ')+suf;if(p<1)requestAnimationFrame(step)})(st)})}})},{threshold:.3});
+    document.querySelectorAll('[data-target]').forEach(function(el){o.observe(el)});
+})();
+
+function toggleFaq(item){
+    const was=item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(function(e){e.classList.remove('open');e.querySelector('.faq-answer').style.maxHeight='0'});
+    if(!was){item.classList.add('open');item.querySelector('.faq-answer').style.maxHeight='250px'}
+}
+
+function handleSubmit(e){
+    e.preventDefault();
+    const f=e.target,ph=f.phone.value.replace(/\D/g,'');
+    if(ph.length<10){showToast('Введите корректный номер');return}
+    const btn=f.querySelector('button[type="submit"]');
+    btn.innerHTML='<span>Отправка...</span>';btn.disabled=true;btn.style.opacity='.6';
+    setTimeout(function(){
+        btn.innerHTML='<span>Перезвоните мне</span>';btn.disabled=false;btn.style.opacity='1';
+        f.reset();document.getElementById('formSuccess').classList.remove('hidden');
+        showToast('Заявка отправлена!');
+        setTimeout(function(){document.getElementById('formSuccess').classList.add('hidden')},5000);
+    },1200);
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},3000)}
+
+(function(){
+    const i=document.querySelector('input[name="phone"]');
+    if(!i)return;
+    i.addEventListener('input',function(){let v=this.value.replace(/\D/g,'');if(v.startsWith('7')||v.startsWith('8'))v=v.substring(1);let f='+7';if(v.length>0)f+=' ('+v.substring(0,3);if(v.length>=3)f+=') '+v.substring(3,6);if(v.length>=6)f+='-'+v.substring(6,8);if(v.length>=8)f+='-'+v.substring(8,10);this.value=v.length>0?f:''});
+    i.addEventListener('focus',function(){if(!this.value)this.value='+7 ('});
+    i.addEventListener('blur',function(){if(this.value==='+7 ('||this.value==='+7')this.value=''});
+})();
+</script>
+</body>
+</html>
